@@ -199,8 +199,8 @@ func _physics_process(delta):
     if not player: return
     fire_cooldown=max(0.0,fire_cooldown-delta)
     var dir=Vector3.ZERO
-    dir.x=Input.get_axis("move_left","move_right")
-    dir.z=Input.get_axis("move_forward","move_back")
+    dir.x=float(Input.is_key_pressed(KEY_D))-float(Input.is_key_pressed(KEY_A))
+    dir.z=float(Input.is_key_pressed(KEY_S))-float(Input.is_key_pressed(KEY_W))
     if dir.length()>0:
         dir=dir.normalized()
         player.velocity.x=dir.x*PLAYER_SPEED
@@ -215,13 +215,12 @@ func _physics_process(delta):
         velocity_y=-0.5
     player.velocity.y=velocity_y
     player.move_and_slide()
-    if Input.is_action_just_pressed("shoot") or shoot_touch:
+    if Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT) or shoot_touch:
         _shoot()
-    if Input.is_key_pressed(KEY_E):
+    if Input.is_key_pressed(KEY_E) and not driving:
         if player.global_position.distance_to(car.global_position)<6.0:
-            driving=!driving
-            if driving: car.visible=false
-            else: car.visible=true
+            driving=true
+            car.visible=false
     if driving:
         car.visible=true
         car.global_position=player.global_position
