@@ -8,14 +8,29 @@ on:
 jobs:
   android:
     runs-on: ubuntu-latest
-    container:
-      image: barichello/godot-ci:4.3.0
     steps:
       - uses: actions/checkout@v4
+
+      - name: Setup Godot
+        uses: chickensoft-games/setup-godot@v2
+        with:
+          version: 4.3.0
+          use-dotnet: false
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android build tools
+        run: sdkmanager "platform-tools" "platforms;android-34" "build-tools;34.0.0"
+
       - name: Import project
         run: godot --headless --editor --quit
+
       - name: Build APK
-        run: mkdir -p build && godot --headless --path . --export-release "Android" build/IRONFALL.apk
+        run: |
+          mkdir -p build
+          godot --headless --path . --export-release "Android" build/IRONFALL.apk
+
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
