@@ -17,6 +17,7 @@ var hud: Label
 var crosshair: Label
 var touch_move := Vector2.ZERO
 var shoot_touch := false
+var e_was_down := false
 
 func _ready():
     _build_world()
@@ -217,14 +218,16 @@ func _physics_process(delta):
     player.move_and_slide()
     if Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT) or shoot_touch:
         _shoot()
-    if Input.is_key_pressed(KEY_E) and not driving:
-        if player.global_position.distance_to(car.global_position)<6.0:
+    var e_down=Input.is_key_pressed(KEY_E)
+    if e_down and not e_was_down:
+        if driving:
+            driving=false
+            car.visible=true
+            car.global_position=player.global_position + Vector3(2,0,0)
+        elif player.global_position.distance_to(car.global_position)<6.0:
             driving=true
             car.visible=false
-    elif Input.is_key_pressed(KEY_E) and driving:
-        driving=false
-        car.visible=true
-        car.global_position=player.global_position + Vector3(2,0,0)
+    e_was_down=e_down
     if driving:
         car.visible=true
         car.global_position=player.global_position
