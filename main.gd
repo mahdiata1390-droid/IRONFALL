@@ -233,7 +233,8 @@ func _physics_process(delta):
         car.global_position=player.global_position
         car.global_position.y=0.8
     _update_enemies(delta)
-    hud.text="IRONFALL   |   HP %d   |   AMMO %d   |   ENEMIES %d   |   %s"%(health,ammo,enemies.size(),("DRIVING" if driving else "ON FOOT"))
+    var drive_state = "DRIVING" if driving else "ON FOOT"
+    hud.text="IRONFALL   |   HP %d   |   AMMO %d   |   ENEMIES %d   |   %s" % [health, ammo, enemies.size(), drive_state]
 
 func _shoot():
     if fire_cooldown>0 or ammo<=0: return
