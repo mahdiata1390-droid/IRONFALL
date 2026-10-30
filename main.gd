@@ -221,6 +221,10 @@ func _physics_process(delta):
         if player.global_position.distance_to(car.global_position)<6.0:
             driving=true
             car.visible=false
+    elif Input.is_key_pressed(KEY_E) and driving:
+        driving=false
+        car.visible=true
+        car.global_position=player.global_position + Vector3(2,0,0)
     if driving:
         car.visible=true
         car.global_position=player.global_position
