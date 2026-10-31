@@ -343,7 +343,7 @@ func _physics_process(delta: float) -> void:
         speed = move_toward(speed, 0.0, DRAG * delta)
 
     # Steering becomes softer at low speed.
-    var steer_strength := clamp(abs(speed) / 7.0, 0.0, 1.0)
+    var steer_strength: float = clampf(abs(speed) / 7.0, 0.0, 1.0)
     steering = move_toward(steering, steer_input, delta * 5.0)
     if abs(speed) > 0.4:
         car.rotation.y -= steering * STEER_RATE * steer_strength * delta * sign(speed)
