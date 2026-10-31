@@ -34,6 +34,25 @@ jobs:
         with:
           packages: "platform-tools platforms;android-34 build-tools;34.0.0"
 
+      - name: Ensure Godot Android export templates
+        shell: bash
+        run: |
+          set -euxo pipefail
+          GODOT_VERSION_DIR="4.3.stable"
+          TEMPLATE_DIR="$HOME/.local/share/godot/export_templates/$GODOT_VERSION_DIR"
+          mkdir -p "$TEMPLATE_DIR"
+          if [ ! -f "$TEMPLATE_DIR/android_debug.apk" ] || [ ! -f "$TEMPLATE_DIR/android_release.apk" ]; then
+            curl -fL --retry 3 -o "$RUNNER_TEMP/godot_templates.tpz"               "https://github.com/godotengine/godot/releases/download/4.3-stable/Godot_v4.3-stable_export_templates.tpz"
+            unzip -oq "$RUNNER_TEMP/godot_templates.tpz" -d "$RUNNER_TEMP/godot_templates"
+            find "$RUNNER_TEMP/godot_templates" -type f -name 'android_debug.apk' -exec cp {} "$TEMPLATE_DIR/android_debug.apk" \;
+            find "$RUNNER_TEMP/godot_templates" -type f -name 'android_release.apk' -exec cp {} "$TEMPLATE_DIR/android_release.apk" \;
+            find "$RUNNER_TEMP/godot_templates" -type f -name 'android_source.zip' -exec cp {} "$TEMPLATE_DIR/android_source.zip" \;
+          fi
+          test -s "$TEMPLATE_DIR/android_debug.apk"
+          test -s "$TEMPLATE_DIR/android_release.apk"
+          echo "Godot templates:"
+          ls -lh "$TEMPLATE_DIR"
+
       - name: Validate Android toolchain
         shell: bash
         run: |
