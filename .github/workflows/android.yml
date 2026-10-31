@@ -101,13 +101,15 @@ jobs:
           godot --headless --verbose --path . --export-debug "Android" build/IRONFALL.apk 2>&1 | tee build/export.log
           test -s build/IRONFALL.apk
 
-      - name: Inspect APK
+      - name: Finalize APK signing
         shell: bash
         run: |
           set -euxo pipefail
           file build/IRONFALL.apk
           unzip -t build/IRONFALL.apk >/dev/null
-          apksigner verify --verbose build/IRONFALL.apk
+          apksigner sign --ks build/debug.keystore --ks-pass pass:android --key-pass pass:android --ks-key-alias androiddebugkey --out build/IRONFALL-signed.apk build/IRONFALL.apk
+          mv build/IRONFALL-signed.apk build/IRONFALL.apk
+          apksigner verify --verbose --min-sdk-version 23 build/IRONFALL.apk
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
