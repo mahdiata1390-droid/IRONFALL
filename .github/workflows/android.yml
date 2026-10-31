@@ -107,9 +107,9 @@ jobs:
           set -euxo pipefail
           file build/IRONFALL.apk
           unzip -t build/IRONFALL.apk >/dev/null
-          apksigner sign --ks build/debug.keystore --ks-pass pass:android --key-pass pass:android --ks-key-alias androiddebugkey --out build/IRONFALL-signed.apk build/IRONFALL.apk
-          mv build/IRONFALL-signed.apk build/IRONFALL.apk
-          apksigner verify --verbose --min-sdk-version 23 build/IRONFALL.apk
+          "$ANDROID_HOME/build-tools/34.0.0/apksigner" verify --verbose build/IRONFALL.apk
+          cp build/IRONFALL.apk build/IRONFALL-signed.apk
+          "$ANDROID_HOME/build-tools/34.0.0/apksigner" verify --verbose --min-sdk-version 23 build/IRONFALL.apk
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
