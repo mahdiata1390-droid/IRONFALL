@@ -29,10 +29,6 @@ var status_label: Label
 var camera_target := Vector3.ZERO
 var traffic: Array[Node3D] = []
 var traffic_speeds: Array[float] = []
-var road_texture: Texture2D = preload("res://assets/road_detail.svg")
-var building_texture: Texture2D = preload("res://assets/building_detail.svg")
-var sidewalk_texture: Texture2D = preload("res://assets/sidewalk_detail.svg")
-var car_paint_texture: Texture2D = preload("res://assets/car_paint.svg")
 
 func mat(color: Color, metallic := 0.0, roughness := 0.75) -> StandardMaterial3D:
     var m := StandardMaterial3D.new()
@@ -75,16 +71,13 @@ func make_emission(parent: Node, pos: Vector3, size: Vector3, color: Color, ener
     parent.add_child(n)
     return n
 
-func make_box(parent: Node, pos: Vector3, size: Vector3, color: Color, collision := true, texture: Texture2D = null) -> MeshInstance3D:
+func make_box(parent: Node, pos: Vector3, size: Vector3, color: Color, collision := true) -> MeshInstance3D:
     var mesh_node := MeshInstance3D.new()
     var box_mesh := BoxMesh.new()
     box_mesh.size = size
     mesh_node.mesh = box_mesh
     mesh_node.position = pos
     var box_mat := mat(color)
-    if texture:
-        box_mat.albedo_texture = texture
-        box_mat.uv1_scale = Vector3(2.5, 2.5, 2.5)
     mesh_node.material_override = box_mat
     parent.add_child(mesh_node)
 
@@ -151,14 +144,14 @@ func _build_city() -> void:
     # Four broad roads crossing the city.
     var road_color := Color("#292b2e")
     for x in [-48.0, 0.0, 48.0]:
-        make_box(self, Vector3(x, -0.08, 0), Vector3(15, 0.12, 180), road_color, false, road_texture)
+        make_box(self, Vector3(x, -0.08, 0), Vector3(15, 0.12, 180), road_color, false)
     for z in [-48.0, 0.0, 48.0]:
         make_box(self, Vector3(0, -0.07, z), Vector3(180, 0.12, 15), road_color, false, road_texture)
 
     # Sidewalk strips.
     var sidewalk := Color("#b7b4ae")
     for x in [-56.0, -40.0, -8.0, 8.0, 40.0, 56.0]:
-        make_box(self, Vector3(x, 0.02, 0), Vector3(1.2, 0.18, 180), sidewalk, false, sidewalk_texture)
+        make_box(self, Vector3(x, 0.02, 0), Vector3(1.2, 0.18, 180), sidewalk, false)
     for z in [-56.0, -40.0, -8.0, 8.0, 40.0, 56.0]:
         make_box(self, Vector3(0, 0.03, z), Vector3(180, 0.18, 1.2), sidewalk, false, sidewalk_texture)
 
@@ -192,7 +185,7 @@ func _build_city() -> void:
         var h := 7.0 + float(i % 4) * 2.8
         var w := 13.0 + float((i + 1) % 3) * 2.0
         var d := 13.0 + float((i + 2) % 3) * 2.0
-        make_box(self, p + Vector3(0, h * 0.5, 0), Vector3(w, h, d), building_colors[i % building_colors.size()], true, building_texture)
+        make_box(self, p + Vector3(0, h * 0.5, 0), Vector3(w, h, d), building_colors[i % building_colors.size()], true)
 
         # Simple roof structure and windows.
         make_box(self, p + Vector3(0, h + 0.25, 0), Vector3(w * 0.65, 0.5, d * 0.65), Color("#555a5e"), false)
