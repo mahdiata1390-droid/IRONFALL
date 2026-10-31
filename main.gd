@@ -27,6 +27,8 @@ var horn_pressed := false
 var hud: Label
 var status_label: Label
 var camera_target := Vector3.ZERO
+var traffic: Array[Node3D] = []
+var traffic_speeds: Array[float] = []
 
 func mat(color: Color, metallic := 0.0, roughness := 0.75) -> StandardMaterial3D:
     var m := StandardMaterial3D.new()
@@ -60,6 +62,9 @@ func _ready() -> void:
     _spawn_player_car()
     _spawn_parked_cars()
     _spawn_pars_showcase()
+    _spawn_traffic()
+    _spawn_street_lights()
+    _spawn_city_signs()
     _build_hud()
     _update_camera(1.0)
 
@@ -72,6 +77,13 @@ func _build_city() -> void:
     e.ambient_light_color = Color(0.72, 0.76, 0.80)
     e.ambient_light_energy = 1.15
     e.tonemap_mode = Environment.TONE_MAPPER_FILMIC
+    e.glow_enabled = true
+    e.glow_intensity = 0.8
+    e.glow_bloom = 0.12
+    e.fog_enabled = true
+    e.fog_light_color = Color("#b7c7d2")
+    e.fog_light_energy = 0.45
+    e.fog_density = 0.006
     env.environment = e
     add_child(env)
 
@@ -79,6 +91,7 @@ func _build_city() -> void:
     sun.rotation_degrees = Vector3(-52, -28, 0)
     sun.light_energy = 1.35
     sun.shadow_enabled = true
+    sun.directional_shadow_max_distance = 90.0
     add_child(sun)
 
     # Large city ground.
@@ -200,6 +213,9 @@ func _spawn_player_car() -> void:
     # Follow camera is a child only for initial setup; position is updated smoothly.
     camera = Camera3D.new()
     camera.current = true
+    camera.fov = 66.0
+    camera.near = 0.08
+    camera.far = 220.0
     add_child(camera)
 
 func _spawn_pars_showcase() -> void:
@@ -265,6 +281,83 @@ func _spawn_parked_cars() -> void:
     _make_parked_car(Vector3(-18, 0.8, 22), Color("#f1f1eb"), PI)
     _make_parked_car(Vector3(48, 0.8, 18), Color("#3c3d40"), PI * 0.5)
     _make_parked_car(Vector3(-48, 0.8, -18), Color("#8a3434"), -PI * 0.5)
+
+func _spawn_traffic() -> void:
+    var colors := [Color("#d9d9d4"), Color("#253d63"), Color("#9b3434"), Color("#343638"), Color("#c7a85b"), Color("#e6e6e2"), Color("#4b5962"), Color("#7a5d4c")]
+    for i in 8:
+        var car_ai := Node3D.new()
+        car_ai.name = "TrafficCar_%02d" % i
+        var lane := float((i % 3) - 1) * 3.2
+        var z := -76.0 + float(i) * 20.0
+        car_ai.position = Vector3(lane, 0.72, z)
+        car_ai.rotation.y = PI * 0.5
+        add_child(car_ai)
+        make_box(car_ai, Vector3(0, 0.48, 0), Vector3(1.85, 0.58, 3.7), colors[i], false)
+        make_box(car_ai, Vector3(0, 0.84, -0.12), Vector3(1.48, 0.48, 1.55), Color("#26353d"), false)
+        for x in [-0.82, 0.82]:
+            for zz in [-1.15, 1.15]:
+                var wheel := MeshInstance3D.new()
+                var wm := CylinderMesh.new()
+                wm.top_radius = 0.42
+                wm.bottom_radius = 0.42
+                wm.height = 0.22
+                wheel.mesh = wm
+                wheel.rotation_degrees = Vector3(0, 0, 90)
+                wheel.position = Vector3(x, 0.28, zz)
+                wheel.material_override = mat(Color("#111315"), 0.0, 0.6)
+                car_ai.add_child(wheel)
+        traffic.append(car_ai)
+        traffic_speeds.append(6.0 + float(i % 4) * 1.4)
+
+func _spawn_street_lights() -> void:
+    for x in [-10.0, 10.0, -50.0, 50.0]:
+        for z in range(-75, 76, 25):
+            var pole := Node3D.new()
+            pole.position = Vector3(x, 0, float(z))
+            add_child(pole)
+            make_box(pole, Vector3(0, 2.8, 0), Vector3(0.12, 5.6, 0.12), Color("#34383b"), false)
+            make_box(pole, Vector3(0.45, 5.5, 0), Vector3(0.9, 0.12, 0.12), Color("#34383b"), false)
+            var lamp := OmniLight3D.new()
+            lamp.position = Vector3(0.82, 5.25, 0)
+            lamp.omni_range = 8.0
+            lamp.light_energy = 1.0
+            lamp.light_color = Color("#ffd98a")
+            pole.add_child(lamp)
+            var bulb := MeshInstance3D.new()
+            var sphere := SphereMesh.new()
+            sphere.radius = 0.12
+            sphere.height = 0.24
+            bulb.mesh = sphere
+            bulb.position = Vector3(0.82, 5.25, 0)
+            var bm := mat(Color("#fff0b0"), 0.0, 0.2)
+            bm.emission_enabled = true
+            bm.emission = Color("#ffd27a")
+            bm.emission_energy_multiplier = 2.5
+            bulb.material_override = bm
+            pole.add_child(bulb)
+
+func _spawn_city_signs() -> void:
+    var signs := [
+        [Vector3(6, 4.3, -7), "CITY CENTER"],
+        [Vector3(-6, 4.3, 7), "DOWNTOWN"],
+        [Vector3(53, 4.0, 8), "PARS AVE"],
+        [Vector3(-53, 4.0, -8), "RING ROAD"]
+    ]
+    for data in signs:
+        var p: Vector3 = data[0]
+        var text_value: String = data[1]
+        var board := Node3D.new()
+        board.position = p
+        add_child(board)
+        make_box(board, Vector3(0, 0, 0), Vector3(5.0, 1.1, 0.12), Color("#155c4c"), false)
+        var label := Label3D.new()
+        label.text = text_value
+        label.font_size = 30
+        label.outline_size = 8
+        label.position = Vector3(0, 0, -0.08)
+        board.add_child(label)
+        make_box(board, Vector3(-2.15, -2.0, 0), Vector3(0.12, 4.0, 0.12), Color("#5c6064"), false)
+        make_box(board, Vector3(2.15, -2.0, 0), Vector3(0.12, 4.0, 0.12), Color("#5c6064"), false)
 
 func _make_parked_car(pos: Vector3, color: Color, rot_y: float) -> void:
     var root := Node3D.new()
@@ -373,6 +466,13 @@ func _input(event: InputEvent) -> void:
     if event is InputEventKey and event.pressed and event.keycode == KEY_R:
         _reset_car()
 
+func _update_traffic(delta: float) -> void:
+    for i in traffic.size():
+        var t: Node3D = traffic[i]
+        t.position.z += traffic_speeds[i] * delta
+        if t.position.z > 88.0:
+            t.position.z = -88.0
+
 func _physics_process(delta: float) -> void:
     if not car:
         return
@@ -424,6 +524,7 @@ func _physics_process(delta: float) -> void:
         _reset_car()
 
     _update_wheels(delta)
+    _update_traffic(delta)
     _update_camera(delta)
 
     hud.text = "IRONFALL CITY   |   %03d KM/H   |   %d%% CAR" % [int(abs(speed) * 5.0), health]
