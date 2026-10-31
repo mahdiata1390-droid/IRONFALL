@@ -146,14 +146,14 @@ func _build_city() -> void:
     for x in [-48.0, 0.0, 48.0]:
         make_box(self, Vector3(x, -0.08, 0), Vector3(15, 0.12, 180), road_color, false)
     for z in [-48.0, 0.0, 48.0]:
-        make_box(self, Vector3(0, -0.07, z), Vector3(180, 0.12, 15), road_color, false, road_texture)
+        make_box(self, Vector3(0, -0.07, z), Vector3(180, 0.12, 15), road_color, false)
 
     # Sidewalk strips.
     var sidewalk := Color("#b7b4ae")
     for x in [-56.0, -40.0, -8.0, 8.0, 40.0, 56.0]:
         make_box(self, Vector3(x, 0.02, 0), Vector3(1.2, 0.18, 180), sidewalk, false)
     for z in [-56.0, -40.0, -8.0, 8.0, 40.0, 56.0]:
-        make_box(self, Vector3(0, 0.03, z), Vector3(180, 0.18, 1.2), sidewalk, false, sidewalk_texture)
+        make_box(self, Vector3(0, 0.03, z), Vector3(180, 0.18, 1.2), sidewalk, false)
 
     # Lane markings.
     var line_color := Color("#d9d4a4")
@@ -365,8 +365,6 @@ func _spawn_player_car() -> void:
     body.scale = Vector3(1.18, 0.40, 2.35)
     body.position = Vector3(0, 0.66, 0)
     var body_mat := premium_mat(Color("#c9c7c1"), 0.45, 0.22)
-    body_mat.albedo_texture = car_paint_texture
-    body_mat.uv1_scale = Vector3(1.4, 1.4, 1.4)
     body.material_override = body_mat
     car_visual.add_child(body)
 
