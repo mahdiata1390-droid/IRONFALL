@@ -53,17 +53,28 @@ jobs:
             -validity 10000 \
             -dname "CN=Android Debug,O=Android,C=US"
 
+      - name: Configure export preset keystore
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path("export_presets.cfg")
+          s = p.read_text()
+          s = s.replace('keystore/debug=""', 'keystore/debug="' + str(Path("${RUNNER_TEMP}") / "android/debug.keystore") + '"')
+          p.write_text(s)
+          PY
+
       - name: Import project
         run: godot --headless --editor --quit
 
       - name: Build APK
-        env:
-          GODOT_ANDROID_KEYSTORE_DEBUG_PATH: ${{ runner.temp }}/android/debug.keystore
-          GODOT_ANDROID_KEYSTORE_DEBUG_USER: androiddebugkey
-          GODOT_ANDROID_KEYSTORE_DEBUG_PASSWORD: android
         run: |
           mkdir -p build
           godot --headless --path . --export-debug "Android" build/IRONFALL.apk
+
+      - name: Verify APK
+        run: |
+          test -s build/IRONFALL.apk
+          ls -lh build/IRONFALL.apk
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
