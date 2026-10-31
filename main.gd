@@ -100,6 +100,7 @@ func _ready() -> void:
     _spawn_street_lights()
     _spawn_city_signs()
     _build_hud()
+    _upgrade_reference_visuals()
     _update_camera(1.0)
 
 func _build_city() -> void:
@@ -204,6 +205,123 @@ func _build_city() -> void:
         crown.position = Vector3(0, 3.1, 0)
         crown.material_override = mat(Color("#3f704d"))
         tree.add_child(crown)
+
+
+func _upgrade_reference_visuals() -> void:
+    # Second heavy visual pass: layered roads, richer facades, detailed showcase car,
+    # illuminated street dressing, organic foliage and cinematic camera balance.
+    var curb_mat := mat(Color("#85888a"), 0.05, 0.48)
+    var edge_mat := mat(Color("#3b3d40"), 0.0, 0.52)
+    var glass := mat(Color("#12242e"), 0.72, 0.08)
+    glass.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+    glass.albedo_color.a = 0.92
+
+    for x in [-48.0, 0.0, 48.0]:
+        for side in [-1.0, 1.0]:
+            make_box(self, Vector3(x + side * 7.75, 0.12, 0), Vector3(0.34, 0.28, 180), curb_mat, false)
+            make_box(self, Vector3(x + side * 7.98, 0.105, 0), Vector3(0.10, 0.10, 180), edge_mat, false)
+    for z in [-48.0, 0.0, 48.0]:
+        for side in [-1.0, 1.0]:
+            make_box(self, Vector3(0, 0.12, z + side * 7.75), Vector3(180, 0.28, 0.34), curb_mat, false)
+            make_box(self, Vector3(0, 0.105, z + side * 7.98), Vector3(180, 0.10, 0.10), edge_mat, false)
+
+    var cross := mat(Color("#e2e0d8"), 0.0, 0.5)
+    for center in [Vector3(0,0,0), Vector3(48,0,0), Vector3(-48,0,0), Vector3(0,0,48), Vector3(0,0,-48)]:
+        for k in range(-5, 6):
+            make_box(self, center + Vector3(float(k) * 0.85, 0.045, 7.0), Vector3(0.55, 0.035, 3.2), cross, false)
+            make_box(self, center + Vector3(7.0, 0.045, float(k) * 0.85), Vector3(3.2, 0.035, 0.55), cross, false)
+
+    var facade_glass := emissive_mat(Color("#7db7c9"), 0.34)
+    var facade_dark := mat(Color("#273137"), 0.28, 0.22)
+    var roof_mat := mat(Color("#3d4246"), 0.15, 0.5)
+    var blocks := [
+        Vector3(-24,0,-24), Vector3(24,0,-24), Vector3(-24,0,24), Vector3(24,0,24),
+        Vector3(-72,0,-24), Vector3(72,0,-24), Vector3(-72,0,24), Vector3(72,0,24),
+        Vector3(-24,0,-72), Vector3(24,0,-72), Vector3(-24,0,72), Vector3(24,0,72),
+        Vector3(-72,0,-72), Vector3(72,0,-72), Vector3(-72,0,72), Vector3(72,0,72)
+    ]
+    for i in blocks.size():
+        var p: Vector3 = blocks[i]
+        var h := 7.0 + float(i % 4) * 2.8
+        var w := 13.0 + float((i + 1) % 3) * 2.0
+        var d := 13.0 + float((i + 2) % 3) * 2.0
+        for row in range(1, int(h), 2):
+            for col in [-0.30, 0.0, 0.30]:
+                make_box(self, p + Vector3(w * col, float(row) * 0.82, -d * 0.505), Vector3(w * 0.16, 0.72, 0.045), facade_glass, false)
+                make_box(self, p + Vector3(w * col, float(row) * 0.82, d * 0.505), Vector3(w * 0.16, 0.72, 0.045), facade_glass, false)
+        for side in [-1.0, 1.0]:
+            for row in range(2, int(h), 2):
+                make_box(self, p + Vector3(side * (w * 0.50 + 0.025), float(row) * 0.82, -d * 0.20), Vector3(0.05, 1.05, d * 0.42), facade_dark, false)
+        for q in [-1.0, 1.0]:
+            make_box(self, p + Vector3(q * w * 0.22, h + 0.55, 0), Vector3(w * 0.18, 0.8, d * 0.22), roof_mat, false)
+
+    for i in 20:
+        var tree := Node3D.new()
+        tree.position = Vector3(-78 + float((i * 43) % 156), 0, -78 + float((i * 61) % 156))
+        add_child(tree)
+        make_box(tree, Vector3(0, 1.25, 0), Vector3(0.32, 2.5, 0.32), Color("#4b382c"), false)
+        for j in range(3):
+            var crown := MeshInstance3D.new()
+            var sm := SphereMesh.new()
+            sm.radius = 0.95
+            sm.height = 1.7
+            sm.radial_segments = 16
+            sm.rings = 8
+            crown.mesh = sm
+            crown.position = Vector3((j - 1) * 0.55, 2.55 + (j % 2) * 0.35, 0)
+            crown.material_override = mat(Color("#315b3e"), 0.0, 0.9)
+            tree.add_child(crown)
+
+    var showcase := get_node_or_null("PeugeotPars")
+    if showcase:
+        var trim := mat(Color("#aeb1b0"), 0.85, 0.18)
+        var black := mat(Color("#101417"), 0.15, 0.16)
+        make_box(showcase, Vector3(0, 0.72, -2.40), Vector3(1.96, 0.28, 0.16), premium_mat(Color("#d8d8d2"), 0.62, 0.22), false)
+        for gx in [-0.42, -0.14, 0.14, 0.42]:
+            make_box(showcase, Vector3(gx, 0.68, -2.405), Vector3(0.045, 0.16, 0.05), trim, false)
+        make_emission(showcase, Vector3(-0.70, 0.73, -2.44), Vector3(0.44, 0.17, 0.06), Color("#fff0bd"), 3.0)
+        make_emission(showcase, Vector3(0.70, 0.73, -2.44), Vector3(0.44, 0.17, 0.06), Color("#fff0bd"), 3.0)
+        make_emission(showcase, Vector3(-0.74, 0.52, 2.36), Vector3(0.40, 0.16, 0.06), Color("#d51f28"), 2.0)
+        make_emission(showcase, Vector3(0.74, 0.52, 2.36), Vector3(0.40, 0.16, 0.06), Color("#d51f28"), 2.0)
+        for x in [-0.99, 0.99]:
+            for z in [-1.52, 1.52]:
+                var rim := MeshInstance3D.new()
+                var rm := CylinderMesh.new()
+                rm.top_radius = 0.34
+                rm.bottom_radius = 0.34
+                rm.height = 0.36
+                rim.mesh = rm
+                rim.rotation_degrees = Vector3(0, 0, 90)
+                rim.position = Vector3(x, 0.40, z)
+                rim.material_override = trim
+                showcase.add_child(rim)
+                var hub := MeshInstance3D.new()
+                var hm := CylinderMesh.new()
+                hm.top_radius = 0.11
+                hm.bottom_radius = 0.11
+                hm.height = 0.38
+                hub.mesh = hm
+                hub.rotation_degrees = Vector3(0, 0, 90)
+                hub.position = Vector3(x, 0.40, z)
+                hub.material_override = black
+                showcase.add_child(hub)
+        var title := showcase.get_node_or_null("Label3D")
+        if title:
+            title.visible = false
+
+    for p in [Vector3(-24,0,-17.0), Vector3(24,0,-17.0), Vector3(-24,0,31.0), Vector3(24,0,31.0)]:
+        make_emission(self, p + Vector3(0, 2.0, 0), Vector3(6.5, 0.12, 0.08), Color("#4bc7d9"), 1.4)
+
+    if camera:
+        camera.fov = 57.0
+        camera.near = 0.05
+        camera.far = 260.0
+    var fill := DirectionalLight3D.new()
+    fill.rotation_degrees = Vector3(-28, 150, 0)
+    fill.light_energy = 0.35
+    fill.shadow_enabled = false
+    add_child(fill)
+
 
 func _make_wheel(parent: Node3D, pos: Vector3) -> MeshInstance3D:
     var wheel := MeshInstance3D.new()
