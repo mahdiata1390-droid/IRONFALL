@@ -71,27 +71,35 @@ func _ready() -> void:
 func _build_city() -> void:
     var env := WorldEnvironment.new()
     var e := Environment.new()
-    e.background_mode = Environment.BG_COLOR
-    e.background_color = Color("#9ab6c8")
+    e.background_mode = Environment.BG_SKY
+    var sky := Sky.new()
+    var sky_mat := ProceduralSkyMaterial.new()
+    sky_mat.sky_top_color = Color("#1d2b44")
+    sky_mat.sky_horizon_color = Color("#8ea8bd")
+    sky_mat.ground_bottom_color = Color("#182026")
+    sky_mat.ground_horizon_color = Color("#65727c")
+    sky_mat.sun_angle_max = 18.0
+    sky.material = sky_mat
+    e.sky = sky
     e.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
     e.ambient_light_color = Color(0.72, 0.76, 0.80)
-    e.ambient_light_energy = 1.15
+    e.ambient_light_energy = 0.82
     e.tonemap_mode = Environment.TONE_MAPPER_FILMIC
     e.glow_enabled = true
-    e.glow_intensity = 0.8
+    e.glow_intensity = 0.55
     e.glow_bloom = 0.12
     e.fog_enabled = true
     e.fog_light_color = Color("#b7c7d2")
     e.fog_light_energy = 0.45
-    e.fog_density = 0.006
+    e.fog_density = 0.0032
     env.environment = e
     add_child(env)
 
     var sun := DirectionalLight3D.new()
     sun.rotation_degrees = Vector3(-52, -28, 0)
-    sun.light_energy = 1.35
+    sun.light_energy = 1.8
     sun.shadow_enabled = true
-    sun.directional_shadow_max_distance = 90.0
+    sun.directional_shadow_max_distance = 140.0
     add_child(sun)
 
     # Large city ground.
@@ -193,13 +201,29 @@ func _spawn_player_car() -> void:
     car_visual = Node3D.new()
     car.add_child(car_visual)
 
-    # Sedan body.
-    make_box(car_visual, Vector3(0, 0.62, 0), Vector3(2.25, 0.72, 4.55), Color("#c6c2b9"), false)
-    make_box(car_visual, Vector3(0, 1.02, -0.25), Vector3(1.82, 0.58, 2.15), Color("#d0cbc1"), false)
+    # Rounded sedan body.
+    var body := MeshInstance3D.new()
+    var body_mesh := SphereMesh.new()
+    body_mesh.radius = 1.0
+    body_mesh.height = 2.0
+    body.mesh = body_mesh
+    body.scale = Vector3(1.18, 0.40, 2.35)
+    body.position = Vector3(0, 0.66, 0)
+    body.material_override = mat(Color("#c9c7c1"), 0.25, 0.32)
+    car_visual.add_child(body)
 
-    # Windows.
-    make_box(car_visual, Vector3(0, 1.18, -0.88), Vector3(1.62, 0.42, 0.72), Color("#26353d"), false)
-    make_box(car_visual, Vector3(0, 1.18, 0.48), Vector3(1.62, 0.42, 0.72), Color("#26353d"), false)
+    var cabin := MeshInstance3D.new()
+    var cabin_mesh := SphereMesh.new()
+    cabin_mesh.radius = 1.0
+    cabin_mesh.height = 2.0
+    cabin.mesh = cabin_mesh
+    cabin.scale = Vector3(0.92, 0.34, 1.20)
+    cabin.position = Vector3(0, 1.02, -0.12)
+    cabin.material_override = mat(Color("#26353d"), 0.15, 0.18)
+    car_visual.add_child(cabin)
+
+    make_box(car_visual, Vector3(0, 0.78, -1.65), Vector3(2.0, 0.20, 0.72), Color("#c9c7c1"), false)
+    make_box(car_visual, Vector3(0, 0.78, 1.55), Vector3(2.0, 0.20, 0.70), Color("#c9c7c1"), false)
 
     # Bumpers / lights.
     make_box(car_visual, Vector3(0, 0.52, -2.32), Vector3(2.05, 0.22, 0.18), Color("#eeeeea"), false)
@@ -213,7 +237,7 @@ func _spawn_player_car() -> void:
     # Follow camera is a child only for initial setup; position is updated smoothly.
     camera = Camera3D.new()
     camera.current = true
-    camera.fov = 66.0
+    camera.fov = 62.0
     camera.near = 0.08
     camera.far = 220.0
     add_child(camera)
@@ -538,9 +562,9 @@ func _update_wheels(delta: float) -> void:
 
 func _update_camera(delta: float) -> void:
     var forward := -car.global_transform.basis.z
-    var desired := car.global_position - forward * 10.5 + Vector3(0, 5.2, 0)
+    var desired := car.global_position - forward * 11.8 + Vector3(0, 5.8, 0)
     camera.global_position = camera.global_position.lerp(desired, 1.0 - exp(-7.0 * delta))
-    camera_target = car.global_position + forward * 4.0 + Vector3(0, 1.1, 0)
+    camera_target = car.global_position + forward * 5.5 + Vector3(0, 1.25, 0)
     camera.look_at(camera_target, Vector3.UP)
 
 func _reset_car() -> void:
