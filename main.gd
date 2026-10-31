@@ -44,6 +44,21 @@ func premium_mat(color: Color, metallic := 0.0, roughness := 0.35) -> StandardMa
     m.clearcoat_roughness = 0.12
     return m
 
+func city_texture(index: int) -> Texture2D:
+    var path := "res://assets/generated/city_material_%02d.png" % clampi(index, 0, 15)
+    if ResourceLoader.exists(path):
+        return load(path) as Texture2D
+    return null
+
+func textured_mat(index: int, color: Color, metallic := 0.0, roughness := 0.7, uv_scale := Vector3(4, 4, 4)) -> StandardMaterial3D:
+    var m := mat(color, metallic, roughness)
+    var tex := city_texture(index)
+    if tex:
+        m.albedo_texture = tex
+        m.uv1_scale = uv_scale
+        m.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC
+    return m
+
 func emissive_mat(color: Color, energy := 2.0) -> StandardMaterial3D:
     var m := mat(color, 0.0, 0.12)
     m.emission_enabled = true
@@ -77,7 +92,14 @@ func make_box(parent: Node, pos: Vector3, size: Vector3, color: Color, collision
     box_mesh.size = size
     mesh_node.mesh = box_mesh
     mesh_node.position = pos
-    var box_mat := mat(color)
+    var material_index := 0
+    if size.x > 20.0 or size.z > 20.0:
+        material_index = 0
+    elif size.y > 5.0:
+        material_index = 2
+    elif size.y < 0.3:
+        material_index = 1
+    var box_mat := textured_mat(material_index, color, 0.05, 0.62, Vector3(3.0, 3.0, 3.0))
     mesh_node.material_override = box_mat
     parent.add_child(mesh_node)
 
@@ -365,6 +387,10 @@ func _spawn_player_car() -> void:
     body.scale = Vector3(1.18, 0.40, 2.35)
     body.position = Vector3(0, 0.66, 0)
     var body_mat := premium_mat(Color("#c9c7c1"), 0.45, 0.22)
+    var car_tex := city_texture(11)
+    if car_tex:
+        body_mat.albedo_texture = car_tex
+        body_mat.uv1_scale = Vector3(1.8, 1.8, 1.8)
     body.material_override = body_mat
     car_visual.add_child(body)
 
