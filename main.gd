@@ -83,21 +83,21 @@ func _build_city() -> void:
     e.sky = sky
     e.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
     e.ambient_light_color = Color(0.72, 0.76, 0.80)
-    e.ambient_light_energy = 0.82
+    e.ambient_light_energy = 0.95
     e.tonemap_mode = Environment.TONE_MAPPER_FILMIC
     e.glow_enabled = true
-    e.glow_intensity = 0.55
-    e.glow_bloom = 0.12
+    e.glow_intensity = 0.72
+    e.glow_bloom = 0.22
     e.fog_enabled = true
     e.fog_light_color = Color("#b7c7d2")
     e.fog_light_energy = 0.45
-    e.fog_density = 0.0032
+    e.fog_density = 0.0020
     env.environment = e
     add_child(env)
 
     var sun := DirectionalLight3D.new()
     sun.rotation_degrees = Vector3(-52, -28, 0)
-    sun.light_energy = 1.8
+    sun.light_energy = 2.15
     sun.shadow_enabled = true
     sun.directional_shadow_max_distance = 140.0
     add_child(sun)
@@ -206,6 +206,8 @@ func _spawn_player_car() -> void:
     var body_mesh := SphereMesh.new()
     body_mesh.radius = 1.0
     body_mesh.height = 2.0
+    body_mesh.radial_segments = 32
+    body_mesh.rings = 16
     body.mesh = body_mesh
     body.scale = Vector3(1.18, 0.40, 2.35)
     body.position = Vector3(0, 0.66, 0)
@@ -216,6 +218,8 @@ func _spawn_player_car() -> void:
     var cabin_mesh := SphereMesh.new()
     cabin_mesh.radius = 1.0
     cabin_mesh.height = 2.0
+    cabin_mesh.radial_segments = 32
+    cabin_mesh.rings = 16
     cabin.mesh = cabin_mesh
     cabin.scale = Vector3(0.92, 0.34, 1.20)
     cabin.position = Vector3(0, 1.02, -0.12)
