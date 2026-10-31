@@ -625,18 +625,31 @@ func _build_hud() -> void:
     var wheel_bg := ColorRect.new()
     wheel_bg.position = Vector2(0, 0)
     wheel_bg.size = Vector2(190, 190)
-    wheel_bg.color = Color(0.02, 0.025, 0.03, 0.45)
+    wheel_bg.color = Color(0.02, 0.025, 0.03, 0.58)
     wheel_bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
     wheel.add_child(wheel_bg)
 
-    var steer := Button.new()
-    steer.text = "◀   STEER   ▶"
-    steer.position = Vector2(10, 55)
-    steer.size = Vector2(170, 80)
-    steer.add_theme_font_size_override("font_size", 18)
-    steer.button_down.connect(func(): touch_left = true; touch_right = true)
-    steer.button_up.connect(func(): touch_left = false; touch_right = false)
-    wheel.add_child(steer)
+    var wheel_ring := Label.new()
+    wheel_ring.text = "◉"
+    wheel_ring.position = Vector2(18, 2)
+    wheel_ring.size = Vector2(154, 154)
+    wheel_ring.add_theme_font_size_override("font_size", 132)
+    wheel_ring.add_theme_color_override("font_color", Color(0.08, 0.09, 0.10, 0.95))
+    wheel_ring.add_theme_color_override("font_shadow_color", Color(0,0,0,0.7))
+    wheel_ring.add_theme_constant_override("shadow_offset_x", 3)
+    wheel_ring.add_theme_constant_override("shadow_offset_y", 5)
+    wheel_ring.mouse_filter = Control.MOUSE_FILTER_IGNORE
+    wheel.add_child(wheel_ring)
+
+    var wheel_hub := Label.new()
+    wheel_hub.text = "IRON"
+    wheel_hub.position = Vector2(66, 72)
+    wheel_hub.size = Vector2(58, 35)
+    wheel_hub.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+    wheel_hub.add_theme_font_size_override("font_size", 13)
+    wheel_hub.add_theme_color_override("font_color", Color("#d6d7d8"))
+    wheel_hub.mouse_filter = Control.MOUSE_FILTER_IGNORE
+    wheel.add_child(wheel_hub)
 
     var left_zone := Button.new()
     left_zone.text = "◀"
