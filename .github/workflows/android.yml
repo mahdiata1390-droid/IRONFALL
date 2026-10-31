@@ -11,7 +11,7 @@ permissions:
 jobs:
   android:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 50
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -77,6 +77,14 @@ jobs:
           export/android/android_sdk_path = "$ANDROID_HOME"
           export/android/java_sdk_path = "$JAVA_HOME"
           EOF
+
+      - name: Generate high-detail city texture library
+        shell: bash
+        run: |
+          set -euxo pipefail
+          python3 -m pip install --disable-pip-version-check --no-input pillow numpy
+          python3 tools/generate_city_assets.py
+          test "$(find assets/generated -type f -name '*.png' | wc -l)" -eq 16
 
       - name: Import and validate project
         shell: bash
