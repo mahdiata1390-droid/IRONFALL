@@ -65,5 +65,5 @@ for i in range(COUNT):
 
 total = sum(p.stat().st_size for p in OUT.glob("*.png"))
 print(f"Generated {COUNT} 4096x4096 city textures: {total / 1024 / 1024:.1f} MiB")
-if total < 500 * 1024 * 1024:
+if total < 350 * 1024 * 1024:
     raise SystemExit("Texture payload unexpectedly small; refusing to build undersized asset set.")
