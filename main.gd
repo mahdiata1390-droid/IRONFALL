@@ -59,6 +59,7 @@ func _ready() -> void:
     _build_city()
     _spawn_player_car()
     _spawn_parked_cars()
+    _spawn_pars_showcase()
     _build_hud()
     _update_camera(1.0)
 
@@ -200,6 +201,64 @@ func _spawn_player_car() -> void:
     camera = Camera3D.new()
     camera.current = true
     add_child(camera)
+
+func _spawn_pars_showcase() -> void:
+    # Peugeot Pars-inspired sedan showcase: original procedural model, not a copied game asset.
+    var root := Node3D.new()
+    root.name = "PeugeotPars"
+    root.position = Vector3(0, 0.82, 8)
+    root.rotation.y = PI
+    add_child(root)
+
+    var body := Color("#d7d7d3")
+    var dark := Color("#20282d")
+    var chrome := Color("#b9b9b2")
+    var red := Color("#c22b2b")
+    var amber := Color("#f0b44c")
+
+    make_box(root, Vector3(0, 0.58, 0), Vector3(2.22, 0.72, 4.55), body, false)
+    make_box(root, Vector3(0, 1.03, -0.18), Vector3(1.78, 0.60, 2.12), body, false)
+
+    # Long sedan glasshouse and pillars.
+    make_box(root, Vector3(0, 1.17, -0.83), Vector3(1.62, 0.43, 0.68), dark, false)
+    make_box(root, Vector3(0, 1.17, 0.47), Vector3(1.62, 0.43, 0.70), dark, false)
+    make_box(root, Vector3(-0.76, 1.17, -0.18), Vector3(0.06, 0.47, 1.45), chrome, false)
+    make_box(root, Vector3(0.76, 1.17, -0.18), Vector3(0.06, 0.47, 1.45), chrome, false)
+
+    # Front grille, bumper and headlamps.
+    make_box(root, Vector3(0, 0.55, -2.31), Vector3(2.02, 0.24, 0.14), chrome, false)
+    make_box(root, Vector3(0, 0.67, -2.37), Vector3(0.92, 0.22, 0.08), dark, false)
+    make_box(root, Vector3(-0.68, 0.72, -2.35), Vector3(0.45, 0.22, 0.09), Color("#eee8c8"), false)
+    make_box(root, Vector3(0.68, 0.72, -2.35), Vector3(0.45, 0.22, 0.09), Color("#eee8c8"), false)
+    make_box(root, Vector3(-0.73, 0.50, 2.31), Vector3(0.38, 0.18, 0.08), red, false)
+    make_box(root, Vector3(0.73, 0.50, 2.31), Vector3(0.38, 0.18, 0.08), red, false)
+
+    # Mirrors and door strips.
+    for x in [-1.04, 1.04]:
+        make_box(root, Vector3(x, 1.04, -0.92), Vector3(0.18, 0.16, 0.34), body, false)
+    for x in [-0.78, 0.78]:
+        make_box(root, Vector3(x, 0.72, 0.0), Vector3(0.04, 0.08, 1.65), chrome, false)
+
+    for x in [-0.98, 0.98]:
+        for z in [-1.52, 1.52]:
+            var w := MeshInstance3D.new()
+            var wm := CylinderMesh.new()
+            wm.top_radius = 0.61
+            wm.bottom_radius = 0.61
+            wm.height = 0.34
+            w.mesh = wm
+            w.rotation_degrees = Vector3(0, 0, 90)
+            w.position = Vector3(x, 0.40, z)
+            w.material_override = mat(Color("#17191b"), 0.1, 0.48)
+            root.add_child(w)
+
+    var title := Label3D.new()
+    title.text = "PEUGEOT PARS"
+    title.position = Vector3(0, 2.45, 0)
+    title.modulate = Color("#ffffff")
+    title.font_size = 42
+    title.outline_size = 8
+    root.add_child(title)
 
 func _spawn_parked_cars() -> void:
     _make_parked_car(Vector3(18, 0.8, 22), Color("#315a88"), 0.0)
