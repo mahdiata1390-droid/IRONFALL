@@ -1,5 +1,5 @@
 [application]
-config/name="IRONFALL"
+config/name="IRONFALL CITY"
 run/main_scene="res://main.tscn"
 config/features=PackedStringArray("4.3", "GL Compatibility")
 boot_splash/bg_color=Color(0.02, 0.02, 0.025, 1)
