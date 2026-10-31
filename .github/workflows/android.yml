@@ -69,7 +69,77 @@ jobs:
           test -f project.godot
           test -f export_presets.cfg
           grep -q '^name="Android"$' export_presets.cfg
-          grep -q '^package/signed=false$' export_presets.cfg
+          grep -q '^package/signed=true
+
+      - name: Configure Godot Android SDK/JDK
+        shell: bash
+        run: |
+          set -euxo pipefail
+          mkdir -p "$HOME/.config/godot"
+          cat > "$HOME/.config/godot/editor_settings-4.3.tres" <<EOF
+          [gd_resource type="EditorSettings" format=3]
+
+          [resource]
+          export/android/android_sdk_path = "$ANDROID_HOME"
+          export/android/java_sdk_path = "$JAVA_HOME"
+          EOF
+
+      - name: Import and validate project
+        shell: bash
+        run: |
+          set -euxo pipefail
+          godot --headless --path . --editor --quit --verbose
+          test -f project.godot
+          test -f main.tscn
+
+      - name: Create debug signing keystore
+        shell: bash
+        run: |
+          set -euxo pipefail
+          mkdir -p build
+          keytool -genkeypair -v -keystore build/debug.keystore -storepass android -keypass android \\
+            -alias androiddebugkey -keyalg RSA -keysize 2048 -validity 10000 \\
+            -dname "CN=Android Debug,O=Android,C=US"
+          test -s build/debug.keystore
+
+      - name: Export Android APK
+        shell: bash
+        run: |
+          set -o pipefail
+          mkdir -p build
+          godot --headless --verbose --path . --export-debug "Android" build/IRONFALL.apk 2>&1 | tee build/export.log
+          test -s build/IRONFALL.apk
+
+      - name: Inspect APK
+        shell: bash
+        run: |
+          set -euxo pipefail
+          ls -lh build/IRONFALL.apk
+          file build/IRONFALL.apk
+          unzip -t build/IRONFALL.apk >/dev/null
+          test -s build/IRONFALL.apk
+          apksigner verify --verbose build/IRONFALL.apk
+
+      - name: Upload APK
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: IRONFALL-Android
+          path: build/IRONFALL.apk
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Upload build diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: IRONFALL-build-diagnostics
+          path: |
+            build/export.log
+            .godot/editor/
+          if-no-files-found: ignore
+          retention-days: 7
+ export_presets.cfg
 
       - name: Configure Godot Android SDK/JDK
         shell: bash
