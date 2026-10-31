@@ -34,8 +34,42 @@ func mat(color: Color, metallic := 0.0, roughness := 0.75) -> StandardMaterial3D
     var m := StandardMaterial3D.new()
     m.albedo_color = color
     m.metallic = metallic
-    m.roughness = roughness
+    m.roughness = clampf(roughness, 0.05, 1.0)
     return m
+
+func premium_mat(color: Color, metallic := 0.0, roughness := 0.35) -> StandardMaterial3D:
+    var m := mat(color, metallic, roughness)
+    m.clearcoat_enabled = true
+    m.clearcoat = 0.8
+    m.clearcoat_roughness = 0.12
+    return m
+
+func emissive_mat(color: Color, energy := 2.0) -> StandardMaterial3D:
+    var m := mat(color, 0.0, 0.12)
+    m.emission_enabled = true
+    m.emission = color
+    m.emission_energy_multiplier = energy
+    return m
+
+func make_window(parent: Node, pos: Vector3, size: Vector3) -> MeshInstance3D:
+    var n := MeshInstance3D.new()
+    var mesh := BoxMesh.new()
+    mesh.size = size
+    n.mesh = mesh
+    n.position = pos
+    n.material_override = mat(Color("#10202a"), 0.4, 0.08)
+    parent.add_child(n)
+    return n
+
+func make_emission(parent: Node, pos: Vector3, size: Vector3, color: Color, energy := 2.0) -> MeshInstance3D:
+    var n := MeshInstance3D.new()
+    var mesh := BoxMesh.new()
+    mesh.size = size
+    n.mesh = mesh
+    n.position = pos
+    n.material_override = emissive_mat(color, energy)
+    parent.add_child(n)
+    return n
 
 func make_box(parent: Node, pos: Vector3, size: Vector3, color: Color, collision := true) -> MeshInstance3D:
     var mesh_node := MeshInstance3D.new()
