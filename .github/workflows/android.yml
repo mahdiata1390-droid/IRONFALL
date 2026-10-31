@@ -129,3 +129,5 @@ jobs:
             .godot/editor/
           if-no-files-found: ignore
           retention-days: 7
+
+# Force a fresh Android build for the current main branch.
