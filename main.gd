@@ -571,7 +571,6 @@ func _button(parent: Control, text_value: String, pos: Vector2, size: Vector2) -
 func _build_hud() -> void:
     var layer := CanvasLayer.new()
     add_child(layer)
-
     var root := Control.new()
     root.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
     layer.add_child(root)
@@ -598,7 +597,6 @@ func _build_hud() -> void:
     map_title.add_theme_font_size_override("font_size", 16)
     root.add_child(map_title)
 
-    # Simplified street grid inside the minimap.
     for x in [70.0, 130.0]:
         var line := ColorRect.new()
         line.position = Vector2(x, 138)
@@ -613,34 +611,75 @@ func _build_hud() -> void:
         root.add_child(line2)
 
     var marker := ColorRect.new()
-    marker.name = "PlayerMarker"
     marker.position = Vector2(106, 194)
     marker.size = Vector2(8, 8)
     marker.color = Color("#e9c94a")
     root.add_child(marker)
 
-    var gas := _button(root, "▲", Vector2(1110, 565), Vector2(105, 85))
+    # Professional mobile driving controls: steering wheel + pedals.
+    var wheel := Control.new()
+    wheel.position = Vector2(70, 510)
+    wheel.size = Vector2(190, 190)
+    root.add_child(wheel)
+
+    var wheel_bg := ColorRect.new()
+    wheel_bg.position = Vector2(0, 0)
+    wheel_bg.size = Vector2(190, 190)
+    wheel_bg.color = Color(0.02, 0.025, 0.03, 0.45)
+    wheel_bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
+    wheel.add_child(wheel_bg)
+
+    var steer := Button.new()
+    steer.text = "◀   STEER   ▶"
+    steer.position = Vector2(10, 55)
+    steer.size = Vector2(170, 80)
+    steer.add_theme_font_size_override("font_size", 18)
+    steer.button_down.connect(func(): touch_left = true; touch_right = true)
+    steer.button_up.connect(func(): touch_left = false; touch_right = false)
+    wheel.add_child(steer)
+
+    var left_zone := Button.new()
+    left_zone.text = "◀"
+    left_zone.position = Vector2(5, 45)
+    left_zone.size = Vector2(82, 100)
+    left_zone.modulate = Color(1,1,1,0.55)
+    left_zone.button_down.connect(func(): touch_left = true)
+    left_zone.button_up.connect(func(): touch_left = false)
+    wheel.add_child(left_zone)
+
+    var right_zone := Button.new()
+    right_zone.text = "▶"
+    right_zone.position = Vector2(103, 45)
+    right_zone.size = Vector2(82, 100)
+    right_zone.modulate = Color(1,1,1,0.55)
+    right_zone.button_down.connect(func(): touch_right = true)
+    right_zone.button_up.connect(func(): touch_right = false)
+    wheel.add_child(right_zone)
+
+    var gas := _button(root, "ACCEL", Vector2(1110, 555), Vector2(120, 80))
     gas.button_down.connect(func(): touch_gas = true)
     gas.button_up.connect(func(): touch_gas = false)
 
-    var brake := _button(root, "▼", Vector2(1110, 655), Vector2(105, 55))
+    var brake := _button(root, "BRAKE", Vector2(1110, 650), Vector2(120, 55))
     brake.button_down.connect(func(): touch_brake = true)
     brake.button_up.connect(func(): touch_brake = false)
 
-    var left := _button(root, "◀", Vector2(890, 620), Vector2(95, 75))
-    left.button_down.connect(func(): touch_left = true)
-    left.button_up.connect(func(): touch_left = false)
-
-    var right := _button(root, "▶", Vector2(990, 620), Vector2(95, 75))
-    right.button_down.connect(func(): touch_right = true)
-    right.button_up.connect(func(): touch_right = false)
-
-    var horn := _button(root, "HORN", Vector2(890, 535), Vector2(95, 65))
+    var horn := _button(root, "HORN", Vector2(955, 555), Vector2(110, 65))
     horn.button_down.connect(func(): horn_pressed = true)
     horn.button_up.connect(func(): horn_pressed = false)
 
     var reset := _button(root, "RESET", Vector2(25, 690), Vector2(120, 48))
     reset.pressed.connect(_reset_car)
+
+func _input(event: InputEvent) -> void:
+    if event is InputEventKey and event.pressed and event.keycode == KEY_R:
+        _reset_car()
+
+    if event is InputEventScreenTouch and event.index == 0 and not event.pressed:
+        touch_left = false
+        touch_right = false
+        touch_gas = false
+        touch_brake = false
 
 func _input(event: InputEvent) -> void:
     if event is InputEventKey and event.pressed and event.keycode == KEY_R:
@@ -686,6 +725,7 @@ func _physics_process(delta: float) -> void:
     steering = move_toward(steering, steer_input, delta * 5.0)
     if abs(speed) > 0.4:
         car.rotation.y -= steering * STEER_RATE * steer_strength * delta * sign(speed)
+        car_visual.rotation.z = lerpf(car_visual.rotation.z, -steering * 0.035, 1.0 - exp(-9.0 * delta))
 
     var forward := -car.global_transform.basis.z
     car.velocity.x = forward.x * speed
